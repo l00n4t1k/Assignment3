@@ -8,6 +8,7 @@ class AbstractScraper(metaclass=ABCMeta):
 
     def __init__(self):
         self.names = []
+        self.f = Formatter()
 
     @abstractmethod
     def scrape(self, url):
@@ -25,12 +26,11 @@ class InitialScraper(AbstractScraper):
         soup = self.get_bs4_data(url + 'national')
         table = soup.find('div', attrs={'class': 'infocard-tall-list'})
         cards = table.find_all('span')
-        self.names = self.get_pokemon_cards(cards, 10)
-        # dex_data = self.format_dex(dex_data)
-        # self.set_nat_dex(dex_data)
+        self.names = self.get_pokemon_cards(cards, 151)
         print(self.names)
 
-    def get_pokemon_cards(self, cards, x):
+    @staticmethod
+    def get_pokemon_cards(cards, x):
         data = []
         c = 0
         for card in cards:
@@ -44,7 +44,17 @@ class InitialScraper(AbstractScraper):
 class DetailScraper(AbstractScraper):
 
     def scrape(self, url):
-        pass
+        print('Scraping additional')
+        for datum in url:
+            soup = self.get_bs4_data(datum[1])
+            vt = soup.find('table', attrs={'class': 'vitals-table'})
+            rows = vt.find_all('td')
+            indi = [row.text for row in rows[0:5]]
+            t = self.f.type_formatter(indi[1])
+            res = [indi[0], datum[0], t[0], t[1],
+                   self.f.accent_remover(indi[2]), self.f.imp_remover(indi[3]),
+                   self.f.imp_remover(indi[4]), datum[1]]
+            print(res)
 
 
 class Director(object):
@@ -56,8 +66,9 @@ class Director(object):
         the_is.scrape(the_url)
 
         the_list = f.add_url(the_is.names, the_url)
-        print(the_list)
-        # the_ds = DetailScraper(the_list)
+
+        the_ds = DetailScraper()
+        the_ds.scrape(the_list)
 
 
 if __name__ == "__main__":

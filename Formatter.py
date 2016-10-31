@@ -12,22 +12,21 @@ class Formatter(object):
         return res
 
     @staticmethod
-    def type_formatter(the_list):
+    def type_formatter(datum):
         res = []
-        for datum in the_list:
-            if datum[2].find(' · ') == -1:
-                datum.append('')
-            else:
-                tl = datum[2].split(' · ')
-                datum[2] = tl[0]
-                datum.append(tl[1])
+        if datum.find(' ') == -1:
             res.append(datum)
+            res.append('')
+        else:
+            res = datum.split(' ')
         return res
 
     def add_url(self, the_list, the_url):
         new_list = []
         for datum in the_list:
+            temp = []
             datum = self.accent_remover(datum)
+            temp.append(datum)
             if re.search('♀', datum):
                 datum = 'Nidoran-f'
             elif re.search('♂', datum):
@@ -39,7 +38,8 @@ class Formatter(object):
             elif re.search('Mime Jr.', datum):
                 datum = 'Mime-Jr'
             new_url = the_url + datum
-            new_list.append(new_url)
+            temp.append(new_url)
+            new_list.append(temp)
         return new_list
 
     # duplicate code / speculative generality
@@ -56,8 +56,8 @@ class Formatter(object):
         return i
 
     @staticmethod
-    def imp_remover(i, c):
-        n = re.search(r'\d*[.]\d*' + c, i)
+    def imp_remover(i):
+        n = re.search(r'\d*[.]\d*', i)
         return n.group()
 
     @staticmethod

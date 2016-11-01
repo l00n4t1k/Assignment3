@@ -13,10 +13,9 @@ class Formatter(object):
 
     @staticmethod
     def type_formatter(datum):
-        res = []
+        datum = re.compile('\\n').sub('', datum)
         if datum.find(' ') == -1:
-            res.append(datum)
-            res.append('')
+            res = [datum, '']
         else:
             res = datum.split(' ')
         return res
@@ -45,8 +44,7 @@ class Formatter(object):
     # duplicate code / speculative generality
     @staticmethod
     def comma_remover(i):
-        p = re.compile(',')
-        i = p.sub('/', i)
+        i = re.compile(',').sub('/', i)
         return i
 
     @staticmethod

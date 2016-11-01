@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 from bs4 import BeautifulSoup
 import requests
 from Formatter import Formatter
+from Builder import PokemonBuilder
 
 
 class AbstractScraper(metaclass=ABCMeta):
@@ -11,7 +12,7 @@ class AbstractScraper(metaclass=ABCMeta):
         self.f = Formatter()
 
     @abstractmethod
-    def scrape(self, url):
+    def do_scrape(self, url):
         pass
 
     @staticmethod
@@ -21,13 +22,13 @@ class AbstractScraper(metaclass=ABCMeta):
 
 
 class InitialScraper(AbstractScraper):
-    def scrape(self, url):
+    def do_scrape(self, url):
         print('Scraping Main')
         soup = self.get_bs4_data(url + 'national')
         table = soup.find('div', attrs={'class': 'infocard-tall-list'})
         cards = table.find_all('span')
-        self.names = self.get_pokemon_cards(cards, 151)
-        print(self.names)
+        self.names = self.get_pokemon_cards(cards, 12)
+        # print(self.names)
 
     @staticmethod
     def get_pokemon_cards(cards, x):
@@ -43,18 +44,26 @@ class InitialScraper(AbstractScraper):
 
 class DetailScraper(AbstractScraper):
 
-    def scrape(self, url):
+    def do_scrape(self, url):
         print('Scraping additional')
+        res = []
+
         for datum in url:
+            print("Scraping", datum[0])
             soup = self.get_bs4_data(datum[1])
             vt = soup.find('table', attrs={'class': 'vitals-table'})
             rows = vt.find_all('td')
             indi = [row.text for row in rows[0:5]]
             t = self.f.type_formatter(indi[1])
-            res = [indi[0], datum[0], t[0], t[1],
-                   self.f.accent_remover(indi[2]), self.f.imp_remover(indi[3]),
-                   self.f.imp_remover(indi[4]), datum[1]]
-            print(res)
+            info = [int(indi[0]), datum[0], t[0], t[1],
+                    self.f.accent_remover(indi[2]),
+                    float(self.f.imp_remover(indi[3])),
+                    float(self.f.imp_remover(indi[4])), datum[1]]
+            # print(info)
+            p = PokemonBuilder()
+            p.build(info)
+            res.append(p.get())
+        return res
 
 
 class Director(object):
@@ -63,12 +72,14 @@ class Director(object):
         f = Formatter()
         the_url = 'http://pokemondb.net/pokedex/'
         the_is = InitialScraper()
-        the_is.scrape(the_url)
+        the_is.do_scrape(the_url)
 
         the_list = f.add_url(the_is.names, the_url)
 
         the_ds = DetailScraper()
-        the_ds.scrape(the_list)
+        the_dex = the_ds.do_scrape(the_list)
+        for element in the_dex:
+            print(element.get_name())
 
 
 if __name__ == "__main__":

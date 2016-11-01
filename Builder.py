@@ -1,4 +1,4 @@
-import Pokemon
+from Pokemon import Pokemon
 
 
 class Builder(object):
@@ -11,7 +11,7 @@ class Builder(object):
 
 
 class PokemonBuilder(Builder):
-    def __init__(self, data):
+    def __init__(self):
         self.pokemon = Pokemon()
 
     def build(self, data):

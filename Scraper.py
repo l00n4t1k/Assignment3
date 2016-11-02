@@ -78,6 +78,7 @@ class Director(object):
 
         the_ds = DetailScraper()
         the_dex = the_ds.do_scrape(the_list)
+        print(the_dex)
         for element in the_dex:
             print(element.get_name())
 
